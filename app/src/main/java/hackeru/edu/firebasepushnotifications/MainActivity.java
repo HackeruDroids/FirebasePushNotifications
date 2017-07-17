@@ -15,6 +15,8 @@ import android.widget.Toast;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Arrays;
 
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -95,16 +98,19 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK){
             //save the user to the database.
             //User model class...
+            //get the firebase user.
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            //initialize the pojo user:
+            User user = new User(currentUser);
 
-            //displayName
-            //uid
 
-            //POJO-> Empty Constructor
-            //wanted Full Constructor
-            //Public getters and setters
-            //toString (if not you will get fired)
+            // Write a user to the database
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference myRef = database.getReference("Users");
 
-            //Optional: Parcelable.
+            myRef.child(currentUser.getUid()).setValue(user);
+
+            //myRef.setValue("Hello, World!");
         }
     }
 
