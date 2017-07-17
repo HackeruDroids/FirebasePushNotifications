@@ -27,7 +27,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //this method is fired when a message is received both in foreground and in background.
     @Override
     public void handleIntent(Intent intent) {
-        //super.handleIntent(intent); don't want the default push and behaviour
+         super.handleIntent(intent); //don't want the default push and behaviour
         Log.d("Hackeru", "handleIntent");
         //1) Build notification using NotificationCompat.Builder
         android.support.v7.app.NotificationCompat.Builder builder = new android.support.v7.app.NotificationCompat.Builder(this);
