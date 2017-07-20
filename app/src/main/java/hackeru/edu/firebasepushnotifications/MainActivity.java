@@ -1,26 +1,35 @@
 package hackeru.edu.firebasepushnotifications;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.File;
 import java.util.Arrays;
+import java.util.List;
+
+import pl.aprilapps.easyphotopicker.EasyImage;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,8 +49,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                getPhoto();
             }
         });
 
@@ -63,13 +71,31 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    private void getPhoto() {
+        //WRITE_EXTERNAL_STORAGE
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            return;
+        }
+        //camera and Gallery
+        EasyImage.openChooserWithGallery(this, "Pick a photo ♥", 0);
+    }
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) getPhoto();
+    }
+
     private void initWithUser() {
         //we have a user...
         // let's get the token from sharedPrefs:
         SharedPreferences prefs = getSharedPreferences("userid", MODE_PRIVATE);
         String token = prefs.getString("token", null /*default to? null*/);
 
-        if (token!=null){
+        if (token != null) {
             Toast.makeText(this, token, Toast.LENGTH_SHORT).show();
             Log.d("Hackeru", token);
         }
@@ -80,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
     }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -88,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void signIn(){
+    private void signIn() {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
@@ -105,23 +132,36 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK){
+        if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
             //save the user to the database.
             //User model class...
             //get the firebase user.
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
             //initialize the pojo user:
             User user = new User(currentUser);
-
-
             // Write a user to the database
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference myRef = database.getReference("Users");
 
             myRef.child(currentUser.getUid()).setValue(user);
-
             //myRef.setValue("Hello, World!");
         }
+        EasyImage.Callbacks callbacks = new EasyImage.Callbacks() {
+            @Override
+            public void onImagePickerError(Exception e, EasyImage.ImageSource source, int type) {
+            }
+            @Override
+            public void onImagesPicked(@NonNull List<File> imageFiles, EasyImage.ImageSource source, int type) {
+                File file = imageFiles.get(0);
+                ImageView iv = findViewById(R.id.iv);
+                Glide.with(MainActivity.this).load(file).into(iv);
+                Uri.fromFile(file).getLastPathSegment();
+            }
+            @Override
+            public void onCanceled(EasyImage.ImageSource source, int type) {
+            }
+        };
+        EasyImage.handleActivityResult(requestCode, resultCode, data, this, callbacks);
     }
 
     @Override
