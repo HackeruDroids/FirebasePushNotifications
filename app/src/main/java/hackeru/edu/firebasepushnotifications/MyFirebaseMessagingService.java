@@ -5,11 +5,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.Set;
 
 /**
  * get the notification.
@@ -18,11 +21,13 @@ import com.google.firebase.messaging.RemoteMessage;
 //it's a specialized intent service
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
+    private static final String TAG = "Hackeru";
+
     //This method is fired when we receive a message in the foreground When the app is visible
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Log.d("Hackeru", "onMessageReceived");
+        Log.d(TAG, "onMessageReceived");
     }
 
 
@@ -30,6 +35,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void handleIntent(Intent intent) {
         // super.handleIntent(intent); //don't want the default push and behaviour
+        Bundle b = new Bundle();
+//        b.putInt("Score", 0);
+//        b.putInt("Score", 10);
+//        b.putInt("Score", 20);
+//        b.putInt("Score", 30);
+
+
+        Bundle bundle = intent.getExtras();
+        //map uses set for the keys
+        Set<String> keys = bundle.keySet();
+        for (String key : keys) {
+            Log.d(TAG, key);
+            //Log.d(TAG, bundle.getString(key));
+        }
+        Log.d(TAG, bundle.getString("theTitle"));
+
         Log.d("Hackeru", "handleIntent");
         //1) Build notification using NotificationCompat.Builder
         android.support.v7.app.NotificationCompat.Builder builder = new android.support.v7.app.NotificationCompat.Builder(this);
