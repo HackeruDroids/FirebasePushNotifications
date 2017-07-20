@@ -1,6 +1,8 @@
 package hackeru.edu.firebasepushnotifications;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.support.v4.app.NotificationManagerCompat;
@@ -27,7 +29,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //this method is fired when a message is received both in foreground and in background.
     @Override
     public void handleIntent(Intent intent) {
-         super.handleIntent(intent); //don't want the default push and behaviour
+        // super.handleIntent(intent); //don't want the default push and behaviour
         Log.d("Hackeru", "handleIntent");
         //1) Build notification using NotificationCompat.Builder
         android.support.v7.app.NotificationCompat.Builder builder = new android.support.v7.app.NotificationCompat.Builder(this);
@@ -44,7 +46,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         builder.setContentIntent(pi);
         builder.setPriority(Notification.PRIORITY_HIGH);
         builder.setDefaults(Notification.DEFAULT_ALL);
-        //TODO: builder.setChannelId("channel1");
+
+        setupChannel();
+        builder.setChannelId("channel1");
         //priority
         //vibrate, sound, lights
         //wake lock, vibrate
@@ -55,4 +59,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         //update a notification: mgr.notify(1, notification);
         //cancel mgr.cancel(id)
     }
+    //starting with O we need notification channels //26
+    private void setupChannel(){
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {return;}
+        NotificationManager mgr = getSystemService(NotificationManager.class);
+        String channelName = getString(R.string.channel1Name);
+        NotificationChannel channel = new NotificationChannel("channel1", channelName, NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription("the most amazing notifications...");
+        mgr.createNotificationChannel(channel);
+
+    }
+
 }
